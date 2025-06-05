@@ -4,30 +4,74 @@ const display = document.getElementById('display');
 // Track if we have performed a claculation
 let justCalculated = false;
 
-function appendToDisplay(value) {
-    console.log('Button pressed:', value);
+    function isOperator(char) {
+        return ['+', '-', '*', '/'].includes(char)
+    }
+
+    function getLastChar() {
+        return display.value.slice(-1);
+    }
+
+    function appendToDisplay(value) {
+        console.log('Button pressed:', value);
+
     let currentValue = display.value;
+
+
     if (justCalculated && !isNaN(value)) {
         display.value = value;
         justCalculated = false;
         return;
     }
 
-        // If current display show 0 and user enters a number, we want to replace the 0
-        if (currentValue === '0' && !isNaN(value)) {
-            display.value = value
-        } else if(currentValue === '0' && value === '.') {
+    if (justCalculated && isOperator(value)) {
+        display.value = currentValue + value;
+        justCalculated = false;
+        return;
+    }
+
+    //Handles operator
+    if (isOperator(value)) {
+        // Dont allow operator as 1st char (exception for minus)
+        if (currentValue === '0' && value !== '-') {
+            return; //Do nothing
+        }
+
+        // if last char is already an operator, replace it
+        if (isOperator(getLastChar())) {
+            display.value = currentValue.slice(0, -1) + value;
+        } else {
             display.value = currentValue + value;
-        } else if (value === '.') {
+        }
+    } else if (!isNaN(value)) {
+        if (currentValue === '0') {
+            display.value = value;
+        } else {
+            display.value = currentValue + value;
+        }   
+    } else if(value === '.') {
+            if (currentValue === '0') {
+                display.value = currentValue + value;
+            } else {
+                //get the last number in the display (after last operator)
+                let parts = currentValue.split('/[+\-*/');
+                let lastNumber = parts[parts.length -1];
+                
+                //only add decimal if number doesnt already have one
+                if (lastNumber.includes('.')) {
+                    display.value = currentValue + value;
+                }
+            }    
+    } else if (value === '.') {
             // get the last number in the display
             let lastNumber = currentValue.split('/[+-\*/]').pop();
             // only add the decimal if the current number doesnt have ont
             if (!lastNumber.includes('.')) {
                 display.value = currentValue + value
             }
-        } else {
+    } else {
             display.value = currentValue + value;
-        } 
+    } 
 
 
         // reset the justCalculated flag when user starts typing
